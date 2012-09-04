@@ -32,6 +32,13 @@ class AdobeConnectAPI
   attr :url
   attr :pointconfig
 
+  def set_session(session_)
+    @mysession = session_
+  end
+  def session
+    @session
+  end
+
   #The URL is the base URL of the Connect-Server, without the trailing slash
   def initialize (url = nil)
     #TODO ChR: Get this from the application config/initializer/abobe_connect_api.rb
