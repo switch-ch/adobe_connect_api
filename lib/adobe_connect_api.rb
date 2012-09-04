@@ -32,11 +32,9 @@ class AdobeConnectAPI
   attr :url
   attr :pointconfig
 
-  def set_session(session_)
-    @mysession = session_
-  end
-  def session
-    @session
+  # return BREEZESESSION id
+  def sessionid
+    @sessionid
   end
 
   #The URL is the base URL of the Connect-Server, without the trailing slash
