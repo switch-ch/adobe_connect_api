@@ -50,11 +50,13 @@ class AdobeConnectAPI
 
   #makes the login to the server
   def login (login = nil, password = nil, account_id=nil, external_auth=nil, domain=nil)
-    if(login == nil)
-       login = pointconfig["username"]
-    end
 
-    if(password == nil)
+    if (login != nil && password == nil)
+      # user given --> use generic user password
+      # TODO KG: generate password
+      password = pointconfig["generic_user_password"]
+    elsif (login == nil) && (password == nil)
+       login = pointconfig["username"]
        password = pointconfig["password"]
     end
 
@@ -64,14 +66,19 @@ class AdobeConnectAPI
       "account-id" => account_id,
       "external-auth" => external_auth,
       "domain" => domain)
+
+    # TODO: debug
+    puts res.body.inspect
+
     cookies = res.response["set-cookie"]
+    puts cookies.inspect
     cookies.split(";").each{|s|
       array = s.split("=")
       if array[0] == "BREEZESESSION"
         @sessionid = array[1]
       end
     }
-    puts "ACS: Logged in"
+    #puts "ACS: Logged in"
     return res.body
   end
 
@@ -81,6 +88,28 @@ class AdobeConnectAPI
     @sessionid = nil
     puts "ACS: Logged out"
     return res
+  end
+
+  # creates a new user in Adobe Connect
+  def create_user(email = nil, login = nil, password = nil, first_name = nil, last_name = nil)
+    # ?action=principal-update&email=string&first-name=string&has-children=boolean&last-name=string&login=string&password=string&send-email=boolean&type=allowedValue&session=BreezeSessionCookieValue
+    
+    # send-email: true
+    # has-children: 0
+    # type: user
+
+    res = query("principal-update", 
+      "email" => email,
+      "login" => login, 
+      "password" => password,
+      "first-name" => first_name,
+      "last-name" => last_name,
+      "send-email" => true,
+      "has-children" => 0, 
+      "type" => "user")
+
+    puts "ACS: user created"
+    return res.body
   end
 
   #Returns all defined quotas (untested)
@@ -250,6 +279,7 @@ class AdobeConnectAPI
     if @sessionid
       request.add_field("Cookie", "BREEZESESSION="+@sessionid)
     end
+    puts request.path
     response = http.request(request)
     return response
   end
