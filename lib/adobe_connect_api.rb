@@ -98,6 +98,10 @@ class AdobeConnectAPI
     # has-children: 0
     # type: user
 
+    if password == nil
+      password = pointconfig["generic_user_password"]
+    end
+
     res = query("principal-update", 
       "email" => email,
       "login" => login, 
