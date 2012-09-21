@@ -11,6 +11,7 @@ require "net/https"
 require "uri"
 require 'xmlsimple'
 require "cgi"
+require "yaml"
 #require 'logger'
 
 require "adobe_connect_api/version"
