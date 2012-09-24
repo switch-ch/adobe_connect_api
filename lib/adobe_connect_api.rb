@@ -39,7 +39,7 @@ class AdobeConnectAPI
   end
 
   #The URL is the base URL of the Connect-Server, without the trailing slash
-  def initialize (url = nil, environment)
+  def initialize (url = nil, environment, root_directory)
     #TODO ChR: Get this from the application config/initializer/abobe_connect_api.rb
     # begin
     #   environment = Rails.env
@@ -48,7 +48,7 @@ class AdobeConnectAPI
     #   environment = Sinatra.env
     # end
 
-    @pointconfig = YAML::load_file("#{Rails.root}/config/config.breeze.yml")[environment]
+    @pointconfig = YAML::load_file("#{root_directory}/config/config.breeze.yml")[environment]
     if (url == nil)
       @url = pointconfig["url"]
     else
