@@ -272,9 +272,12 @@ class AdobeConnectAPI
 
     puts response.body
     data = XmlSimple.xml_in(response.body)
+    scos = []
     if data["sco-search-by-field-info"]
       results = data["sco-search-by-field-info"][0]
-      return results["sco"]
+      scos = results["sco"]
+    end
+    return AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
   end
 
   #sends a query to the server and returns the http response. Parameters,
