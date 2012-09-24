@@ -255,6 +255,28 @@ class AdobeConnectAPI
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], rows)
   end
 
+  def search_meeting(name)
+    action = "sco-search-by-field&query=" + name + "&field=name"
+    uri = URI.parse(AC_HOST + "/api/xml?action=#{action}")
+    http = Net::HTTP.new(uri.host, uri.port)
+    if uri.scheme == "https"
+      http.use_ssl=true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
+    request = Net::HTTP::Get.new(uri.request_uri)
+    if @sessionid
+      request.add_field("Cookie", "BREEZESESSION="+@sessionid)
+    end
+    puts request.path
+    response = http.request(request)
+
+    puts response.body
+    data = XmlSimple.xml_in(response.body)
+    if data["sco-search-by-field-info"]
+      results = data["sco-search-by-field-info"][0]
+      return results["sco"]
+  end
+
   #sends a query to the server and returns the http response. Parameters,
   #filter- and sort-definitions can be added. The filter as "filter" => ... and
   #the sort as "sort" => ...
