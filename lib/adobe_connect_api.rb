@@ -143,7 +143,14 @@ class AdobeConnectAPI
     puts query
 
     puts "ACS: meeting created"
-    return res.body
+    puts response.body
+    data = XmlSimple.xml_in(response.body)
+    scos = []
+    if data["sco-search-by-field-info"]
+      results = data["sco-search-by-field-info"][0]
+      scos = results["sco"]
+    end
+    return AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
     # https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest
   end
 
@@ -307,6 +314,8 @@ class AdobeConnectAPI
   #filter- and sort-definitions can be added. The filter as "filter" => ... and
   #the sort as "sort" => ...
   def query(action, hash = {})
+    puts action
+    puts hash.inspect
     # uri = URI.parse("https://130.59.10.31")
     # http = Net::HTTP.new(uri.host, uri.port)
     # http.use_ssl = true
