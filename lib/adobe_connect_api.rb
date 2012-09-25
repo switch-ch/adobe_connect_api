@@ -124,6 +124,20 @@ class AdobeConnectAPI
     return res.body
   end
 
+  # TODO KG: add host
+  # create a new meeting in Adobe Connect
+  def create_meeting(name, folder_id, url_path)
+    res = query("sco-update", 
+      "type" => "meeting", 
+      "name" => name, 
+      "folder-id" => folder_id, 
+      "url_path" => url_path)
+
+    puts "ACS: meeting created"
+    return res.body
+    # https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest
+  end
+
   #Returns all defined quotas (untested)
   def report_quotas
     res = query("report-quota")
