@@ -157,11 +157,7 @@ class AdobeConnectAPI
 
   # searches the user with the given email address and returns the principal id
   # e.g. "https://collab-test.switch.ch/api/xml?action=principal-list&filter-email=rfurter@ethz.ch"
-  def get_principal_id(email)
-
-    filter = AdobeConnectAPI::FilterDefinition.new
-    filter["email"] == email
-
+  def get_principal_id(filter)
     res = query("principal-list", filter)
     puts query
 
