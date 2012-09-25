@@ -131,7 +131,9 @@ class AdobeConnectAPI
     if folder_id == nil
       folder_id = 12578070
     end
-    
+
+    puts "ACS create meeting with name, folder_id and url_path: " + name + folder_id.to_s + url_path
+
     res = query("sco-update", 
       "type" => "meeting", 
       "name" => name, 
