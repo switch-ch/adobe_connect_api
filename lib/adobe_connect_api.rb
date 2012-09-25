@@ -127,7 +127,7 @@ class AdobeConnectAPI
   # TODO KG: add host
   # create a new meeting in Adobe Connect
   # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
-  def create_meeting(name, folder_id, url_path, host)
+  def create_meeting_with_host(name, folder_id, url_path, host)
 
     if folder_id == nil
       folder_id = 12578070
