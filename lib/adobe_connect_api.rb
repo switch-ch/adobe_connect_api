@@ -144,7 +144,7 @@ class AdobeConnectAPI
     puts "ACS: meeting created"
     puts res.body
     data = XmlSimple.xml_in(res.body)
-    sco_id = data.first.attr('sco-id')
+    sco_id = data["sco"].attr('sco-id')
 
     #get principal id
     principal_id = get_principal_id(host)
