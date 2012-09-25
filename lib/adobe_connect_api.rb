@@ -145,11 +145,11 @@ class AdobeConnectAPI
     puts res.body
     data = XmlSimple.xml_in(res.body)
 
-    sco = data["sco"]
+    sco = data["sco"].first
     puts sco.class
     puts sco.inspect
     puts sco.methods.sort
-    sco_id = data["sco"].attr('sco-id')
+    sco_id = data["sco"].first.attr('sco-id')
 
     #get principal id
     principal_id = get_principal_id(host)
