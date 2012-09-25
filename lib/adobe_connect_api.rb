@@ -127,11 +127,18 @@ class AdobeConnectAPI
   # TODO KG: add host
   # create a new meeting in Adobe Connect
   def create_meeting(name, folder_id, url_path)
+
+    if folder_id == nil
+      folder_id = 12578070
+    end
+    
     res = query("sco-update", 
       "type" => "meeting", 
       "name" => name, 
       "folder-id" => folder_id, 
       "url_path" => url_path)
+
+    puts query
 
     puts "ACS: meeting created"
     return res.body
