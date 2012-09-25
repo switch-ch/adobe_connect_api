@@ -124,11 +124,11 @@ class AdobeConnectAPI
     return res.body
   end
 
-  # TODO KG: add host
   # create a new meeting in Adobe Connect
   # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
   def create_meeting_with_host(name, folder_id, url_path, host)
 
+    # TODO KG: get folder_id
     if folder_id == nil
       folder_id = 12578070
     end
@@ -144,12 +144,7 @@ class AdobeConnectAPI
     puts "ACS: meeting created"
     puts res.body
     data = XmlSimple.xml_in(res.body)
-
-    sco = data["sco"].first
-    puts sco.class
-    puts sco.inspect
-    puts sco.methods.sort
-    sco_id = data["sco"].first.attr('sco-id')
+    sco_id = data["sco"].first['sco-id']
 
     #get principal id
     principal_id = get_principal_id(host)
