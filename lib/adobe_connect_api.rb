@@ -126,7 +126,7 @@ class AdobeConnectAPI
 
   # create a new meeting in Adobe Connect
   # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
-  def create_meeting_with_host(name, folder_id, url_path, host)
+  def create_meeting_with_host(name, folder_id, url_path, filter)
 
     # TODO KG: get folder_id
     if folder_id == nil
@@ -139,7 +139,7 @@ class AdobeConnectAPI
       "type" => "meeting", 
       "name" => name, 
       "folder-id" => folder_id, 
-      "url_path" => url_path)
+      "url-path" => url_path)
 
     puts "ACS: meeting created"
     puts res.body
@@ -147,34 +147,36 @@ class AdobeConnectAPI
     sco_id = data["sco"].first['sco-id']
 
     #get principal id
-    principal_id = get_principal_id(host)
+    principal_id = get_principal_id(filter)
     puts "ACS: add principal " + principal_id + " as host to new created meeting " + sco_id
 
-    # TODO: aktuellen Benutzer als Host hinzufügen:
-    # https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host
-    # Als acl-id wird die sco-id der Antwort des "Meeting anlegen"-Requests verwendet.
+    # aktuellen Benutzer als Host hinzufügen
+    result = permissions_update(principal_id, sco_id, 'host')
+    puts result
+    return result
   end
 
   # searches the user with the given email address and returns the principal id
   # e.g. "https://collab-test.switch.ch/api/xml?action=principal-list&filter-email=rfurter@ethz.ch"
   def get_principal_id(filter)
-    res = query("principal-list", filter)
+    res = query("principal-list", "filter" => filter)
     puts query
 
     data = XmlSimple.xml_in(res.body)
-    rows = []
-    if data["principal-list"]
-      data["principal-list"].each do |trans|
-        rows = trans["principal"]
-      end 
-    end
-    result = AdobeConnectAPI::Result.new(data["status"][0]["code"], rows)
+    principal_id = data["principal"].first['principal-id']
 
-    puts result
+    return principal_id
+  end
 
-    principal_id = result.first.attr('principal-id')
-    puts principal-id
-    return principal-id
+  # e.g. "https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host"
+  def permissions_update(principal_id, acl_id, permission_id)
+    res = query("permissions-update", 
+      "principal-id" => principal_id,
+      "acl-id" => acl_id, 
+      "permission-id" => permission_id)
+    puts query
+
+    return res.body
   end
 
   #Returns all defined quotas (untested)
