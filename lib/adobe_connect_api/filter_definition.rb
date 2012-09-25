@@ -1,4 +1,4 @@
-# A filter defeinition can be added to some actions to filter the results
+# A filter definition can be added to some actions to filter the results
 # server-side. Example:
 # filter = AdobeConnectAPI::FilterDefinition.new
 # filter["sco-id"].greater_than 25

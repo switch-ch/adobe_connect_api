@@ -126,7 +126,8 @@ class AdobeConnectAPI
 
   # TODO KG: add host
   # create a new meeting in Adobe Connect
-  def create_meeting(name, folder_id, url_path)
+  # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
+  def create_meeting(name, folder_id, url_path, host)
 
     if folder_id == nil
       folder_id = 12578070
@@ -140,18 +141,44 @@ class AdobeConnectAPI
       "folder-id" => folder_id, 
       "url_path" => url_path)
 
-    puts query
-
     puts "ACS: meeting created"
     puts response.body
     data = XmlSimple.xml_in(response.body)
-    scos = []
-    if data["sco-search-by-field-info"]
-      results = data["sco-search-by-field-info"][0]
-      scos = results["sco"]
+    sco_id = data.first.attr('sco-id')
+
+    #get principal id
+    principal_id = get_principal_id(host)
+    puts "ACS: add principal " + principal_id + " as host to new created meeting " + sco_id
+
+    # TODO: aktuellen Benutzer als Host hinzufügen:
+    # https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host
+    # Als acl-id wird die sco-id der Antwort des "Meeting anlegen"-Requests verwendet.
+  end
+
+  # searches the user with the given email address and returns the principal id
+  # e.g. "https://collab-test.switch.ch/api/xml?action=principal-list&filter-email=rfurter@ethz.ch"
+  def get_principal_id(email)
+
+    filter = AdobeConnectAPI::FilterDefinition.new
+    filter["email"] == email
+
+    res = query("principal-list", filter)
+    puts query
+
+    data = XmlSimple.xml_in(res.body)
+    rows = []
+    if data["principal-list"]
+      data["principal-list"].each do |trans|
+        rows = trans["principal"]
+      end 
     end
-    return AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
-    # https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest
+    result = AdobeConnectAPI::Result.new(data["status"][0]["code"], rows)
+
+    puts result
+
+    principal_id = result.first.attr('principal-id')
+    puts principal-id
+    return principal-id
   end
 
   #Returns all defined quotas (untested)
