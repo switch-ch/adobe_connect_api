@@ -142,7 +142,7 @@ class AdobeConnectAPI
       "url_path" => url_path)
 
     puts "ACS: meeting created"
-    puts response.body
+    puts res.body
     data = XmlSimple.xml_in(response.body)
     sco_id = data.first.attr('sco-id')
 
