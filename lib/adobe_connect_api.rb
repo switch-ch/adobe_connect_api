@@ -171,7 +171,7 @@ class AdobeConnectAPI
     if data["principal-list"]
       data["principal"].each do |trans|
         # can only contain one result
-        principal-id = trans["principal-id"])
+        principal_id = trans["principal-id"])
       end
     end
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], principal_id)
