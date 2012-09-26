@@ -149,6 +149,7 @@ class AdobeConnectAPI
     #get principal id
     puts filter.inspect
     principal_id = get_principal_id(filter)
+    puts principal_id.inspect
     puts "ACS: add principal " + principal_id + " as host to new created meeting " + sco_id
 
     # aktuellen Benutzer als Host hinzufügen
@@ -166,9 +167,14 @@ class AdobeConnectAPI
       "sort" => sort)
 
     data = XmlSimple.xml_in(res.body)
-    principal_id = data["principal-list"].first['principal-id']
-
-    return principal_id
+    rows = []
+    if data["principal-list"]
+      data["principal"].each do |trans|
+        # can only contain one result
+        principal-id = trans["principal-id"])
+      end
+    end
+    return AdobeConnectAPI::Result.new(data["status"][0]["code"], principal_id)
   end
 
   # e.g. "https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host"
