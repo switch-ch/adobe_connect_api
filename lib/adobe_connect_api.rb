@@ -365,7 +365,7 @@ class AdobeConnectAPI
     hash.each_pair do |key, val|
       if val
         if key == "filter" or key == "sort"
-          uri.query += URI::decode(val).query
+          uri.query += val.query
         else
           uri.query += "&" + key + "=" + CGI::escape("#{val}")
         end
