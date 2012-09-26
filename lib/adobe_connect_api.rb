@@ -166,12 +166,13 @@ class AdobeConnectAPI
       "filter" => filter, 
       "sort" => sort)
 
+    puts res.body
     data = XmlSimple.xml_in(res.body)
     rows = []
-    if data["principal-list"]
-      data["principal-list"].each do |trans|
+    if data["principal"]
+      data["principal"].each do |trans|
         # can only contain one result
-        principal_id = trans["principal"]["principal-id"]
+        principal_id = trans["principal-id"]
       end
     end
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], principal_id)
@@ -384,7 +385,7 @@ class AdobeConnectAPI
     end
     puts "ACS query - request: " + request.path
     response = http.request(request)
-    puts "ACS query - respone: " + response.inspect
+    puts "ACS query - response: " + response.inspect
     return response
   end
 
