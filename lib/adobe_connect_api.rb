@@ -356,7 +356,7 @@ class AdobeConnectAPI
     res = query("sco-update", 
       "sco-id" => sco_id, 
       "description" => description,
-      "lang" => lang)
+      "lang" => language)
     data = XmlSimple.xml_in(res.body)
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
   end
