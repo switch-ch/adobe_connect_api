@@ -154,8 +154,8 @@ class AdobeConnectAPI
 
     # aktuellen Benutzer als Host hinzufügen
     result = permissions_update(principal_id, sco_id, 'host')
-    puts result
-    return result
+    puts result.inspect
+    puts "ACS: added meeting host: " + result.status
   end
 
   # searches the user with the given email address and returns the principal id
@@ -185,9 +185,9 @@ class AdobeConnectAPI
       "principal-id" => principal_id,
       "acl-id" => acl_id, 
       "permission-id" => permission_id)
-    puts query
-
-    return res.body
+    
+    data = XmlSimple.xml_in(res.body)
+    return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
   end
 
   #Returns all defined quotas (untested)
