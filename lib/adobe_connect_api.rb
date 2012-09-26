@@ -324,22 +324,25 @@ class AdobeConnectAPI
   end
 
   def search_meeting(name)
-    action = "sco-search-by-field&query=" + name + "&field=name"
-    uri = URI.parse(AC_HOST + "/api/xml?action=#{action}")
-    http = Net::HTTP.new(uri.host, uri.port)
-    if uri.scheme == "https"
-      http.use_ssl=true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    end
-    request = Net::HTTP::Get.new(uri.request_uri)
-    if @sessionid
-      request.add_field("Cookie", "BREEZESESSION="+@sessionid)
-    end
-    puts request.path
-    response = http.request(request)
+    res = query("sco-search-by-field", 
+      "query" => name, 
+      "field" => "name")
+    # action = "sco-search-by-field&query=" + name + "&field=name"
+    # uri = URI.parse(AC_HOST + "/api/xml?action=#{action}")
+    # http = Net::HTTP.new(uri.host, uri.port)
+    # if uri.scheme == "https"
+    #   http.use_ssl=true
+    #   http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    # end
+    # request = Net::HTTP::Get.new(uri.request_uri)
+    # if @sessionid
+    #   request.add_field("Cookie", "BREEZESESSION="+@sessionid)
+    # end
+    # puts request.path
+    # response = http.request(request)
 
-    puts response.body
-    data = XmlSimple.xml_in(response.body)
+    puts res.body
+    data = XmlSimple.xml_in(res.body)
     scos = []
     if data["sco-search-by-field-info"]
       results = data["sco-search-by-field-info"][0]
@@ -348,12 +351,20 @@ class AdobeConnectAPI
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
   end
 
+  def update_meeting(sco_id, description, language)
+    "action = sco-update&sco-id=&description=&lang="
+    res = query("sco-update", 
+      "sco-id" => sco_id, 
+      "description" => description,
+      "lang" => lang)
+    data = XmlSimple.xml_in(res.body)
+    return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
+  end
+
   #sends a query to the server and returns the http response. Parameters,
   #filter- and sort-definitions can be added. The filter as "filter" => ... and
   #the sort as "sort" => ...
   def query(action, hash = {})
-    puts action
-    puts hash.inspect
     # uri = URI.parse("https://130.59.10.31")
     # http = Net::HTTP.new(uri.host, uri.port)
     # http.use_ssl = true
