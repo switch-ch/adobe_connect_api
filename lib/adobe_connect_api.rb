@@ -164,7 +164,6 @@ class AdobeConnectAPI
     res = query("principal-list", 
       "filter" => filter, 
       "sort" => sort)
-    puts query
 
     data = XmlSimple.xml_in(res.body)
     principal_id = data["principal-list"].first['principal-id']
@@ -377,8 +376,9 @@ class AdobeConnectAPI
     if @sessionid
       request.add_field("Cookie", "BREEZESESSION="+@sessionid)
     end
-    puts request.path
+    puts "ACS query - request: " + request.path
     response = http.request(request)
+    puts "ACS query - respone: " + response.inspect
     return response
   end
 
