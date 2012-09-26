@@ -169,9 +169,9 @@ class AdobeConnectAPI
     data = XmlSimple.xml_in(res.body)
     rows = []
     if data["principal-list"]
-      data["principal"].each do |trans|
+      data["principal-list"].each do |trans|
         # can only contain one result
-        principal_id = trans["principal-id"]
+        principal_id = trans["principal"]["principal-id"]
       end
     end
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], principal_id)

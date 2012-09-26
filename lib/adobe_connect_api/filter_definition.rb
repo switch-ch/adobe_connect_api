@@ -48,7 +48,7 @@ class AdobeConnectApi::FilterDefinition
 
   class Field
     def matches (value)
-      @matches = URI::encode(value)
+      @matches = value
     end
 
     def greater_than (value)
