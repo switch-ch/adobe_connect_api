@@ -156,6 +156,8 @@ class AdobeConnectAPI
     result = permissions_update(principal_id, sco_id, 'host')
     puts result.inspect
     puts "ACS: added meeting host: " + result.status
+
+    return sco_id
   end
 
   # searches the user with the given email address and returns the principal id
