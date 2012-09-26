@@ -169,13 +169,14 @@ class AdobeConnectAPI
     puts res.body
     data = XmlSimple.xml_in(res.body)
     rows = []
-    if data["principal"]
-      data["principal"].each do |trans|
-        # can only contain one result
-        principal_id = trans["principal-id"]
+    if data["principal-list"]
+      data["principal-list"].each do |trans|
+        rows = trans["principal"]
       end
     end
-    return AdobeConnectAPI::Result.new(data["status"][0]["code"], principal_id)
+
+    # can only contain one result, since each email adress is used only once in AC
+    rows.first["principal-id"] unless rows.nil?
   end
 
   # e.g. "https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host"
