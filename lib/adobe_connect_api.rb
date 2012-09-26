@@ -147,6 +147,7 @@ class AdobeConnectAPI
     sco_id = data["sco"].first['sco-id']
 
     #get principal id
+    puts filter.inspect
     principal_id = get_principal_id(filter)
     puts "ACS: add principal " + principal_id + " as host to new created meeting " + sco_id
 
@@ -158,12 +159,15 @@ class AdobeConnectAPI
 
   # searches the user with the given email address and returns the principal id
   # e.g. "https://collab-test.switch.ch/api/xml?action=principal-list&filter-email=rfurter@ethz.ch"
-  def get_principal_id(filter)
-    res = query("principal-list", "filter" => filter)
+  def get_principal_id(filter = nil, sort = nil)
+    puts "ACS: get_principal_id"
+    res = query("principal-list", 
+      "filter" => filter, 
+      "sort" => sort)
     puts query
 
     data = XmlSimple.xml_in(res.body)
-    principal_id = data["principal"].first['principal-id']
+    principal_id = data["principal-list"].first['principal-id']
 
     return principal_id
   end
