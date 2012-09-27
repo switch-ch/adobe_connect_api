@@ -1,3 +1,3 @@
 module AdobeConnectApi
-  VERSION = "0.0.42.alpha"
+  VERSION = "0.0.43.alpha"
 end

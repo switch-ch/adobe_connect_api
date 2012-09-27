@@ -126,7 +126,7 @@ class AdobeConnectAPI
 
   # create a new meeting in Adobe Connect
   # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
-  def create_meeting_with_host(name, folder_id, url_path, filter)
+  def create_meeting_with_host(name, folder_id, url_path, email)
     puts "ACS create meeting with name, folder_id and url_path: " + name + folder_id.to_s + url_path
 
     res = query("sco-update", 
@@ -141,7 +141,8 @@ class AdobeConnectAPI
     sco_id = data["sco"].first['sco-id']
 
     #get principal id
-    puts filter.inspect
+    filter = AdobeConnectApi::FilterDefinition.new
+    filter["email"] == email
     principal_id = get_principal_id(filter)
     puts principal_id.inspect
     puts "ACS: add principal " + principal_id + " as host to new created meeting " + sco_id
