@@ -208,6 +208,17 @@ class AdobeConnectAPI
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
   end
 
+  # e.g. acl-field-update&acl-id=13117741&field-id=meeting-passcode&value=12345
+  def set_passcode(acl_id, passcode)
+    res = query("acl-field-update", 
+      "acl-id" => acl_id, 
+      "field-id" => "meeting-passcode", 
+      "value" => passcode)
+
+    data = XmlSimple.xml_in(res.body)
+    return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
+  end
+
   #Returns all defined quotas (untested)
   def report_quotas
     res = query("report-quota")
