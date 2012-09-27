@@ -127,12 +127,6 @@ class AdobeConnectAPI
   # create a new meeting in Adobe Connect
   # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
   def create_meeting_with_host(name, folder_id, url_path, filter)
-
-    # TODO KG: get folder_id
-    if folder_id == nil
-      folder_id = 12578070
-    end
-
     puts "ACS create meeting with name, folder_id and url_path: " + name + folder_id.to_s + url_path
 
     res = query("sco-update", 
@@ -179,6 +173,28 @@ class AdobeConnectAPI
 
     # can only contain one result, since each email adress is used only once in AC
     rows.first["principal-id"] unless rows.nil?
+  end
+
+  def get_my_meetings_folder_id(email)
+    # res = query("sco-shortcuts")
+    # data = XmlSimple.xml_in(res.body)
+    # if data["shortcuts"]
+    #   data["shortcuts"].each do |trans|
+    #     if trans["sco"]["type"] == "user-meetings"
+    #       tree_id = trans["sco"]["sco-id"]
+    #       break
+    #   end
+    # end
+
+    # NOTE: this id does not change unless we set up AC new
+    tree_id = 14
+
+    filter = AdobeConnectApi::FilterDefinition.new
+    filter["email"] == contact_mail
+
+    res = sco_contents(tree_id, filter)
+    # should not contain more than 1 result
+    return res.rows.first["sco-id"]
   end
 
   # e.g. "https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host"
@@ -327,21 +343,6 @@ class AdobeConnectAPI
     res = query("sco-search-by-field", 
       "query" => name, 
       "field" => "name")
-    # action = "sco-search-by-field&query=" + name + "&field=name"
-    # uri = URI.parse(AC_HOST + "/api/xml?action=#{action}")
-    # http = Net::HTTP.new(uri.host, uri.port)
-    # if uri.scheme == "https"
-    #   http.use_ssl=true
-    #   http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    # end
-    # request = Net::HTTP::Get.new(uri.request_uri)
-    # if @sessionid
-    #   request.add_field("Cookie", "BREEZESESSION="+@sessionid)
-    # end
-    # puts request.path
-    # response = http.request(request)
-
-    puts res.body
     data = XmlSimple.xml_in(res.body)
     scos = []
     if data["sco-search-by-field-info"]
