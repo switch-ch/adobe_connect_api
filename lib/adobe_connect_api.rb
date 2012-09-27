@@ -190,7 +190,7 @@ class AdobeConnectAPI
     tree_id = 14
 
     filter = AdobeConnectApi::FilterDefinition.new
-    filter["email"] == contact_mail
+    filter["email"] == email
 
     res = sco_contents(tree_id, filter)
     # should not contain more than 1 result
