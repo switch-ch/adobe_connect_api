@@ -155,6 +155,23 @@ class AdobeConnectAPI
     return sco_id
   end
 
+  # create a new meeting in Adobe Connect
+  # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
+  def create_meeting(name, folder_id, url_path)
+    puts "ACS create meeting with name, folder_id and url_path: " + name + folder_id.to_s + url_path
+
+    res = query("sco-update", 
+      "type" => "meeting", 
+      "name" => name, 
+      "folder-id" => folder_id, 
+      "url-path" => url_path)
+
+    puts "ACS: meeting created"
+    puts res.body
+    data = XmlSimple.xml_in(res.body)
+    data["sco"].first['sco-id']
+  end
+
   # searches the user with the given email address and returns the principal id
   # e.g. "https://collab-test.switch.ch/api/xml?action=principal-list&filter-email=rfurter@ethz.ch"
   def get_principal_id(filter = nil, sort = nil)
