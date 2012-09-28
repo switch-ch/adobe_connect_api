@@ -126,37 +126,6 @@ class AdobeConnectAPI
 
   # create a new meeting in Adobe Connect
   # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
-  def create_meeting_with_host(name, folder_id, url_path, email)
-    puts "ACS create meeting with name, folder_id and url_path: " + name + folder_id.to_s + url_path
-
-    res = query("sco-update", 
-      "type" => "meeting", 
-      "name" => name, 
-      "folder-id" => folder_id, 
-      "url-path" => url_path)
-
-    puts "ACS: meeting created"
-    puts res.body
-    data = XmlSimple.xml_in(res.body)
-    sco_id = data["sco"].first['sco-id']
-
-    #get principal id
-    filter = AdobeConnectApi::FilterDefinition.new
-    filter["email"] == email
-    principal_id = get_principal_id(filter)
-    puts principal_id.inspect
-    puts "ACS: add principal " + principal_id + " as host to new created meeting " + sco_id
-
-    # aktuellen Benutzer als Host hinzufügen
-    result = permissions_update(principal_id, sco_id, 'host')
-    puts result.inspect
-    puts "ACS: added meeting host: " + result.status
-
-    return sco_id
-  end
-
-  # create a new meeting in Adobe Connect
-  # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
   def create_meeting(name, folder_id, url_path)
     puts "ACS create meeting with name, folder_id and url_path: " + name + folder_id.to_s + url_path
 
