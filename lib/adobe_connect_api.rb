@@ -124,9 +124,7 @@ class AdobeConnectAPI
     puts res.body
     data = XmlSimple.xml_in(res.body)
     
-    puts data["principal"].class
-    
-    return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
+    return data["principal"][0]["principal-id"]
   end
 
   # create a new meeting in Adobe Connect
