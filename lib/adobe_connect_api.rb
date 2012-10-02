@@ -123,10 +123,10 @@ class AdobeConnectAPI
     puts "ACS: user created"
     puts res.body
     data = XmlSimple.xml_in(res.body)
-    principal_id = data["principal"]["principal-id"]
-    puts principal_id
-    return principal_id
-
+    
+    puts data["principal"].class
+    
+    return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
   end
 
   # create a new meeting in Adobe Connect
