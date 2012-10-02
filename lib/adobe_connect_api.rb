@@ -124,7 +124,7 @@ class AdobeConnectAPI
     puts res.body
     data = XmlSimple.xml_in(res.body)
     
-    return data["principal"][0]["principal-id"]
+    data["principal"].first["principal-id"]
   end
 
   # create a new meeting in Adobe Connect
