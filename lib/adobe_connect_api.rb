@@ -121,7 +121,9 @@ class AdobeConnectAPI
       "type" => "user")
 
     puts "ACS: user created"
-    return res.body
+    puts res.body
+    data = XmlSimple.xml_in(res.body)
+    data["principal-id"]
   end
 
   # create a new meeting in Adobe Connect
@@ -193,6 +195,14 @@ class AdobeConnectAPI
     
     data = XmlSimple.xml_in(res.body)
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
+  end
+
+  #action=group-membership-update&group-id=integer&principal-id=integer&is-member=boolean
+  def group_membership_update(group_id, principal_id, is_member)
+    res = query("group-membership-update", 
+      "group-id" => group_id, 
+      "principal-id" => principal_id, 
+      "is-member" => is_member)
   end
 
   # e.g. acl-field-update&acl-id=13117741&field-id=meeting-passcode&value=12345
