@@ -144,6 +144,16 @@ class AdobeConnectAPI
     data["sco"].first['sco-id']
   end
 
+  def delete_meeting(sco_id)
+    puts "ACS delete meeting with sco_id: " + sco_id
+
+    res = query("sco-delete", 
+      "sco-id" => sco_id)
+
+    puts "ACS: meeting deleted"
+    return res.body
+  end
+
   # searches the user with the given email address and returns the principal id
   # e.g. "https://collab-test.switch.ch/api/xml?action=principal-list&filter-email=rfurter@ethz.ch"
   def get_principal_id(filter = nil, sort = nil)
