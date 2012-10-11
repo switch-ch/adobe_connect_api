@@ -1,3 +1,4 @@
+# encoding: utf-8
 
 # Copyright (c) 2010 SWITCH - Serving Swiss Universities
 # Author: Mischael Schill <me@mschill.ch>
