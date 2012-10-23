@@ -313,7 +313,7 @@ class AdobeConnectAPI
   def permissions_info(sco_id, filter = nil)
     res = query("permissions-info", "acl-id" => sco_id, "filter" => filter)
     data = XmlSimple.xml_in(res.body)
-    puts YAML::dump(data)
+    #puts YAML::dump(data)
 #    if data["sco"][0]
 #      return data["sco"][0]
 #    end
@@ -420,7 +420,7 @@ class AdobeConnectAPI
     end
     puts "ACS query - request: " + request.path
     response = http.request(request)
-    puts "ACS query - response: " + response.inspect
+    puts "ACS query - response: " + response.body.inspect
     return response
   end
 
