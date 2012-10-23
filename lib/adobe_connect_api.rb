@@ -313,6 +313,9 @@ class AdobeConnectAPI
   def permissions_info(sco_id, filter = nil)
     res = query("permissions-info", "acl-id" => sco_id, "filter" => filter)
     data = XmlSimple.xml_in(res.body)
+    if data['permissions'][0]
+      return data['permissions'][0]
+    end
     #puts YAML::dump(data)
 #    if data["sco"][0]
 #      return data["sco"][0]
