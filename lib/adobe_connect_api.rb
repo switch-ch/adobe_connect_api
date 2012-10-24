@@ -195,7 +195,7 @@ class AdobeConnectAPI
 
     res = sco_contents(tree_id, filter)
     # should not contain more than 1 result
-    if res.rows.nil?
+    if res.rows.first.nil?
       return nil
     else
       return res.rows.first["sco-id"]
