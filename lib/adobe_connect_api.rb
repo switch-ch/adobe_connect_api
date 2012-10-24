@@ -195,6 +195,9 @@ class AdobeConnectAPI
 
     res = sco_contents(tree_id, filter)
     # should not contain more than 1 result
+    puts res.rows.inspect
+    puts res.rows.class
+    puts res.rows.methods.sort
     if res.rows.first.nil?
       return nil
     else
