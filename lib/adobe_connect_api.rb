@@ -195,7 +195,10 @@ class AdobeConnectAPI
 
     res = sco_contents(tree_id, filter)
     # should not contain more than 1 result
-    return res.rows.first["sco-id"]
+    if res.rows.empty?
+      return nil
+    else
+      return res.rows.first["sco-id"]
   end
 
   # e.g. "https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host"
