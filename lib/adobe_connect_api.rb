@@ -195,7 +195,7 @@ class AdobeConnectAPI
 
     res = sco_contents(tree_id, filter)
     # should not contain more than 1 result
-    if data["status"][0]["code"].eql?("invalid")
+    if res.rows.empty?
       return nil
     else
       return res.rows.first["sco-id"]
