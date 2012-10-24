@@ -199,6 +199,7 @@ class AdobeConnectAPI
       return nil
     else
       return res.rows.first["sco-id"]
+    end
   end
 
   # e.g. "https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host"
