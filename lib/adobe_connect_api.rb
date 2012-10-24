@@ -194,13 +194,10 @@ class AdobeConnectAPI
     filter["name"] == email
 
     res = sco_contents(tree_id, filter)
-    # should not contain more than 1 result
-    puts res.rows.inspect
-    puts res.rows.class
-    puts res.rows.methods.sort
-    if res.rows.first.nil?
+    if res.rows.empty?
       return nil
     else
+      # should not contain more than 1 result
       return res.rows.first["sco-id"]
     end
   end
