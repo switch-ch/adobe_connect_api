@@ -397,7 +397,7 @@ class AdobeConnectAPI
       nil
     else
       result.rows.each do |sco|
-        if sco["name"].eql(name)
+        if sco["name"] == name
           return sco["sco-id"]
         end
       end
