@@ -366,6 +366,7 @@ class AdobeConnectAPI
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], rows)
   end
 
+  # sco-search-by-field&query=TB_ac_test&field=name
   def search_meeting(name)
     res = query("sco-search-by-field", 
       "query" => name, 
@@ -377,6 +378,31 @@ class AdobeConnectAPI
       scos = results["sco"]
     end
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
+  end
+
+  # sco-search-by-field&query=TB_ac_test&field=name and additionally check that the name is exactly the same (what is not done in Adobe Connect)
+  def search_unique_name(name)
+    res = query("sco-search-by-field", 
+      "query" => name, 
+      "field" => "name")
+    data = XmlSimple.xml_in(res.body)
+    scos = []
+    if data["sco-search-by-field-info"]
+      results = data["sco-search-by-field-info"][0]
+      scos = results["sco"]
+    end
+    result = AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
+
+    if result.rows.empty?
+      nil
+    else
+      result.rows.each do |sco|
+        if sco["name"].eql(name)
+          return sco["sco-id"]
+        end
+      end
+    end
+    return nil
   end
 
   def update_meeting(sco_id, description, language)
@@ -430,5 +456,15 @@ class AdobeConnectAPI
     puts "ACS query - response: " + response.body.inspect
     return response
   end
+
+
+
+  ### ADMIN FUNCTIONS (FOR STATISTICS) ###
+
+  # def report-active-meetings
+  #   res = query("report-active-meetings")
+  #   data = XmlSimple.xml_in(res.body)
+  #   return AdobeConnectAPI::Result.new(data)
+  # end
 
 end
