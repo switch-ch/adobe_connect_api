@@ -1,0 +1,28 @@
+# Copyright (c) 2010 SWITCH - Serving Swiss Universities
+# Author: Christian Rohrer <christian.rohrer@switch.ch>
+# $Id$
+
+# Configuration of the breeze / adobe connect connection
+
+development:
+  url     : https://collab-test.switch.ch
+  username: interactAdmin@switch.ch
+  password: CqxV4pi0WUyqAq5G
+
+  generic_user_password: gu4nolico
+
+test:
+  url     : https://collab-test.switch.ch
+  username: interactAdmin@switch.ch
+  password: CqxV4pi0WUyqAq5G
+
+  generic_user_password: gu4nolico
+
+production:
+  url     : https://collab.switch.ch
+  username: interactAdmin@switch.ch
+  password: CqxV4pi0WUyqAq5G
+
+  generic_user_password: gu4nolico
+
+

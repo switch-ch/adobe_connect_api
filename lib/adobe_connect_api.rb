@@ -1,9 +1,10 @@
 # encoding: utf-8
 
-# Copyright (c) 2010 SWITCH - Serving Swiss Universities
+# Copyright (c) 2010 - 2013 SWITCH - Serving Swiss Universities
 # Author: Mischael Schill <me@mschill.ch>
 #         Martin Kos <martin@kos.li>
 #         Christian Rohrer <christian.rohrer@switch.ch>
+#         Katja Gräfenhain <katja.graefenhain@switch.ch>
 # $Id$
 
 require 'rubygems'
@@ -34,9 +35,20 @@ class AdobeConnectAPI
   attr :url
   attr :pointconfig
 
+  def self.version_string
+    "AdobeConnectAPI version #{AdobeConnectApi::VERSION}"
+  end
+
   # return BREEZESESSION id
   def sessionid
     @sessionid
+  end
+
+  def pointconfig=(pointconfig)
+    if pointconfig == nil
+      pointconfig = YAML::load_file("#{root_directory}/config/config.breeze.yml")[environment]
+    end
+    @pointconfig = pointconfig
   end
 
   #The URL is the base URL of the Connect-Server, without the trailing slash
@@ -49,7 +61,6 @@ class AdobeConnectAPI
     #   environment = Sinatra.env
     # end
 
-    @pointconfig = YAML::load_file("#{root_directory}/config/config.breeze.yml")[environment]
     if (url == nil)
       @url = pointconfig["url"]
     else
