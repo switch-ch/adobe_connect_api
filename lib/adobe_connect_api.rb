@@ -136,7 +136,20 @@ class AdobeConnectAPI
     puts res.body
     data = XmlSimple.xml_in(res.body)
     
-    data["principal"].first["principal-id"]
+    if data.keys.include?('principal')
+      data["principal"].first["principal-id"]
+    else 
+      data
+    end
+  end
+
+  def delete_user(principal_id)
+    puts "ACS delete user with id: " + principal_id
+
+    res = query("principals-delete", "principal-id" => principal_id)
+
+    puts "ACS: user deleted"
+    return res.body
   end
 
   # create a new meeting in Adobe Connect

@@ -3,11 +3,15 @@ require 'spec_helper'
 # testdata:
 MEETING_NAME = 'Testmeeting from RSpec'
 URL_PATH = 'rspec_testmeeting'
+E_MAIL = 'testuser@switch.ch'
+FIRST_NAME = 'Test'
+LAST_NAME = 'User'
 
 # API return values
 STATUS_OK = 'ok'
 NO_DATA = 'no-data'
 STATUS_INVALID = 'invalid'
+STATUS_NO_ACCESS = 'no-access'
 CODE_DUPLICATE = 'duplicate'
 
 describe AdobeConnectAPI do
@@ -70,10 +74,39 @@ describe AdobeConnectAPI do
     it 'should be able to create a meeting' do
       folder_id = @acs.get_my_meetings_folder_id(@interactconfig['test_user'])
       res = @acs.create_meeting(MEETING_NAME, folder_id, URL_PATH)
+      # should return the sco-id of the created meeting
       res.to_i.should_not be 0
     end
 
-    # TODO: find meeting and delete it
+    it 'should not be able to create a user' do
+      password = @interactconfig['generic_user_password']
+      res = @acs.create_user(E_MAIL, E_MAIL, password, FIRST_NAME, LAST_NAME)
+      status = res['status'].first['code']
+      status.should include(STATUS_NO_ACCESS)
+    end
+  end
+
+
+  describe 'admin user' do
+    before(:each) do
+      # login normal user (no admin)
+      login = @interactconfig['username']
+      password = @interactconfig['password']
+      @acs.login(login, password)
+
+      # delete the user if it already exists
+      filter = AdobeConnectApi::FilterDefinition.new
+      filter["email"] == E_MAIL
+      sco_id = @acs.get_principal_id(filter)
+      @acs.delete_user(sco_id) unless sco_id.nil?
+    end
+
+    it 'should be able to create a user' do
+      password = @interactconfig['generic_user_password']
+      res = @acs.create_user(E_MAIL, E_MAIL, password, FIRST_NAME, LAST_NAME)
+      # should return the sco-id of the new user
+      res.to_i.should_not be 0
+    end
   end
 
 
