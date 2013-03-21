@@ -128,7 +128,7 @@ class AdobeConnectAPI
       "password" => password,
       "first-name" => first_name,
       "last-name" => last_name,
-      "send-email" => true,
+      "send-email" => false,
       "has-children" => 0, 
       "type" => "user")
 
