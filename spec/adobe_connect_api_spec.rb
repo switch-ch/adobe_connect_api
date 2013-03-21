@@ -143,6 +143,23 @@ describe AdobeConnectAPI do
       sco_id = @acs.search_unique_name(MEETING_NAME)
       sco_id.should be_nil
     end
+
+    it 'should be able to add another host' do
+      sco_id = @acs.search_unique_name(MEETING_NAME)
+      filter = AdobeConnectApi::FilterDefinition.new
+      # add admin as other host
+      filter["email"] == @interactconfig['username']
+      principal_id = @acs.get_principal_id(filter)
+      res = @acs.permissions_update(principal_id, sco_id, "host") unless (principal_id.nil? || sco_id.nil?)
+      res.status.should include(STATUS_OK)
+    end
+
+    it 'should return the sco-info' do 
+      sco_id = @acs.search_unique_name(MEETING_NAME)
+      res = @acs.sco_info(sco_id)
+      res['sco-id'].should eq sco_id
+    end
+
   end
 
 end

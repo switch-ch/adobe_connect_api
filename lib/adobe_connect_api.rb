@@ -338,8 +338,10 @@ class AdobeConnectAPI
   def sco_info(sco_id)
     res = query("sco-info", "sco-id" => sco_id)
     data = XmlSimple.xml_in(res.body)
-    if data["sco"][0]
+    if data.keys.include?('sco') && data["sco"][0]
       return data["sco"][0]
+    else
+      return data
     end
   end
 
