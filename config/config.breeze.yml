@@ -9,6 +9,7 @@ development:
   username: interactAdmin@switch.ch
   password: CqxV4pi0WUyqAq5G
 
+  test_user: interact-support@switch.ch
   generic_user_password: gu4nolico
 
 test:
@@ -16,6 +17,7 @@ test:
   username: interactAdmin@switch.ch
   password: CqxV4pi0WUyqAq5G
 
+  test_user: interact-support@switch.ch
   generic_user_password: gu4nolico
 
 production:

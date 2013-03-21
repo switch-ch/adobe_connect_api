@@ -153,7 +153,11 @@ class AdobeConnectAPI
     puts "ACS: meeting created"
     puts res.body
     data = XmlSimple.xml_in(res.body)
-    data["sco"].first['sco-id']
+    if data.keys.include?('sco')
+      data["sco"].first['sco-id']
+    else
+      data
+    end
   end
 
   def delete_meeting(sco_id)
@@ -199,7 +203,9 @@ class AdobeConnectAPI
     # end
 
     # NOTE: this id does not change unless we set up AC new
-    tree_id = 14
+    # tree_id = 14
+    # since we migrated to the new hardware, the tree_id changed
+    tree_id = 11
 
     filter = AdobeConnectApi::FilterDefinition.new
     filter["name"] == email
