@@ -1,4 +1,5 @@
 require 'spec_helper'
+#include '../lib/adobe_connect_api/xml_parser'
 
 # testdata:
 MEETING_NAME = 'Testmeeting from RSpec'
@@ -35,22 +36,19 @@ describe AdobeConnectAPI do
     it 'should login admin' do
       @acs.pointconfig=(@interactconfig)
       # login to Adobe Connect
-      res = XmlSimple.xml_in(@acs.login(), { 'KeyAttr' => 'name' })
-      status = res['status'].first['code']
-      status.should match STATUS_OK
+      res = @acs.login()
+      @acs.get_status_code(res).should match STATUS_OK
     end
 
     it 'should logout' do
-      res = XmlSimple.xml_in(@acs.logout(), { 'KeyAttr' => 'name' })
-      status = res['status'].first['code']
-      status.should include(STATUS_OK)
+      res = @acs.logout()
+      @acs.get_status_code(res).should include(STATUS_OK)
     end
 
     it 'should not login admin with wrong password' do
       login = @interactconfig['username']
-      res = XmlSimple.xml_in(@acs.login(login, 'password'), { 'KeyAttr' => 'name' })
-      status = res['status'].first['code']
-      status.should match NO_DATA
+      res = @acs.login(login, 'password')
+      @acs.get_status_code(res).should match NO_DATA
     end
   end
 
@@ -62,34 +60,38 @@ describe AdobeConnectAPI do
       @acs.login(login, password)
 
       # delete the meeting if it already exists
-      sco_id = @acs.search_unique_name(MEETING_NAME)
+      res = @acs.search_unique_name(MEETING_NAME)
+      sco_id = @acs.get_sco_id(res)
       @acs.delete_meeting(sco_id) unless sco_id.nil?
     end
 
     it 'should return the id of my-meetings folder' do
-      res = @acs.get_my_meetings_folder_id(@interactconfig['test_user'])
-      res.to_i.should_not be 0
+      folder = @acs.get_my_meetings_folder(@interactconfig['test_user'])
+      @acs.get_folder_id(folder).to_i.should_not be 0
     end
 
     it 'should be able to create a meeting' do
-      folder_id = @acs.get_my_meetings_folder_id(@interactconfig['test_user'])
+      folder = @acs.get_my_meetings_folder(@interactconfig['test_user'])
+      folder_id = @acs.get_folder_id(folder)
       res = @acs.create_meeting(MEETING_NAME, folder_id, URL_PATH)
-      # should return the sco-id of the created meeting
-      res.to_i.should_not be 0
+
+      puts res.inspect
+
+      @acs.get_status_code(res).should include(STATUS_OK)
+      @acs.get_sco_id(res).to_i.should_not be 0
     end
 
     it 'should not be able to create a user' do
       password = @interactconfig['generic_user_password']
       res = @acs.create_user(E_MAIL, E_MAIL, password, FIRST_NAME, LAST_NAME)
-      status = res['status'].first['code']
-      status.should include(STATUS_NO_ACCESS)
+      @acs.get_status_code(res).should include(STATUS_NO_ACCESS)
     end
   end
 
 
   describe 'admin user' do
     before(:each) do
-      # login normal user (no admin)
+      # login normal admin user
       login = @interactconfig['username']
       password = @interactconfig['password']
       @acs.login(login, password)
@@ -97,15 +99,20 @@ describe AdobeConnectAPI do
       # delete the user if it already exists
       filter = AdobeConnectApi::FilterDefinition.new
       filter["email"] == E_MAIL
-      sco_id = @acs.get_principal_id(filter)
+      principal = @acs.get_principal(filter)
+      sco_id = @acs.get_principal_id(principal)
       @acs.delete_user(sco_id) unless sco_id.nil?
     end
 
     it 'should be able to create a user' do
       password = @interactconfig['generic_user_password']
       res = @acs.create_user(E_MAIL, E_MAIL, password, FIRST_NAME, LAST_NAME)
+
+      # should contain the status code OK
+      @acs.get_status_code(res).should include(STATUS_OK)
+
       # should return the sco-id of the new user
-      res.to_i.should_not be 0
+      @acs.get_principal_id(res).to_i.should_not be 0
     end
   end
 
@@ -117,47 +124,53 @@ describe AdobeConnectAPI do
       password = @interactconfig['generic_user_password']
       @acs.login(login, password)
 
-      # create meeting
-      folder_id = @acs.get_my_meetings_folder_id(@interactconfig['test_user'])
-      res = @acs.create_meeting(MEETING_NAME, folder_id, URL_PATH)
+      # get folder id
+      @folder_id = @acs.get_folder_id(@acs.get_my_meetings_folder(@interactconfig['test_user']))
+
+      # check if meeting already exists
+      res = @acs.search_unique_name(MEETING_NAME)
+      @sco_id = @acs.get_sco_id(res)
+
+      if @sco_id.nil?
+        # create meeting
+        res = @acs.create_meeting(MEETING_NAME, @folder_id, URL_PATH) 
+        @sco_id = @acs.get_sco_id(res)
+      end
     end
 
     it 'should not be able to create a meeting with the same url-path again' do
-      folder_id = @acs.get_my_meetings_folder_id(@interactconfig['test_user'])
-      res2 = @acs.create_meeting(MEETING_NAME, folder_id, URL_PATH)
-      status = res2['status'].first['code']
+      res = @acs.create_meeting(MEETING_NAME, @folder_id, URL_PATH)
+
+      status = @acs.get_status_code(res)
       status.should include(STATUS_INVALID)
-      code = res2['status'].first['invalid'].first['subcode']
-      code.should include(CODE_DUPLICATE)
+
+      subcode = @acs.get_subcode_invalid(res)
+      subcode.should include(CODE_DUPLICATE)
     end
 
-    it 'should find and delete the meeting' do
-      # find meeting
-      sco_id = @acs.search_unique_name(MEETING_NAME)
-      sco_id.should_not be_nil
+    it 'should delete the meeting' do
       # delete meeting
-      res = XmlSimple.xml_in(@acs.delete_meeting(sco_id))
-      status = res['status'].first['code']
-      status.should include(STATUS_OK)
+      res = @acs.delete_meeting(@sco_id)
+      @acs.get_status_code(res).should include(STATUS_OK)
+
       # try to find meeting again
-      sco_id = @acs.search_unique_name(MEETING_NAME)
+      res = @acs.search_unique_name(MEETING_NAME)
+      sco_id = @acs.get_sco_id(res)
       sco_id.should be_nil
     end
 
     it 'should be able to add another host' do
-      sco_id = @acs.search_unique_name(MEETING_NAME)
       filter = AdobeConnectApi::FilterDefinition.new
-      # add admin as other host
       filter["email"] == @interactconfig['username']
-      principal_id = @acs.get_principal_id(filter)
-      res = @acs.permissions_update(principal_id, sco_id, "host") unless (principal_id.nil? || sco_id.nil?)
-      res.status.should include(STATUS_OK)
+      principal = @acs.get_principal(filter)
+      principal_id = @acs.get_principal_id(principal)
+      res = @acs.permissions_update(principal_id, @sco_id, "host") unless (principal_id.nil? || @sco_id.nil?)
+      @acs.get_status_code(res).should include(STATUS_OK)
     end
 
     it 'should return the sco-info' do 
-      sco_id = @acs.search_unique_name(MEETING_NAME)
-      res = @acs.sco_info(sco_id)
-      res['sco-id'].should eq sco_id
+      res = @acs.sco_info(@sco_id)
+      @acs.get_sco_id(res).should eq @sco_id
     end
 
   end

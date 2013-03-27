@@ -16,10 +16,11 @@ require "cgi"
 require "yaml"
 #require 'logger'
 
-require "adobe_connect_api/version"
+require 'adobe_connect_api/version'
 require 'adobe_connect_api/filter_definition'
 require 'adobe_connect_api/sort_definition'
 require 'adobe_connect_api/result'
+require 'adobe_connect_api/xml_parser'
 
 
 # This class is a simple utility to acces the adobe connect api. Before
@@ -31,6 +32,7 @@ require 'adobe_connect_api/result'
 
 # module AdobeConnectApi
 class AdobeConnectAPI
+  include XMLParser
 
   attr :url
   attr :pointconfig
@@ -53,14 +55,6 @@ class AdobeConnectAPI
 
   #The URL is the base URL of the Connect-Server, without the trailing slash
   def initialize (url = nil, environment, root_directory)
-    #TODO ChR: Get this from the application config/initializer/abobe_connect_api.rb
-    # begin
-    #   environment = Rails.env
-    # # KG: we need the rescue blog since belt does not know Rails, but instead uses Sinatra.env
-    # rescue
-    #   environment = Sinatra.env
-    # end
-
     if (url == nil)
       @url = pointconfig["url"]
     else
@@ -87,9 +81,6 @@ class AdobeConnectAPI
       "external-auth" => external_auth,
       "domain" => domain)
 
-    # TODO: debug
-    puts res.body.inspect
-
     cookies = res.response["set-cookie"]
     puts cookies.inspect
     cookies.split(";").each{|s|
@@ -98,23 +89,23 @@ class AdobeConnectAPI
         @sessionid = array[1]
       end
     }
-    #puts "ACS: Logged in"
+    puts "ACS: Logged in"
     return res.body
   end
 
   #makes a logout and removes the cookie
   def logout
-    res = query("logout").body
+    res = query("logout")
     @sessionid = nil
     puts "ACS: Logged out"
-    return res
+    return res.body
   end
 
   # creates a new user in Adobe Connect
   def create_user(email = nil, login = nil, password = nil, first_name = nil, last_name = nil)
     # ?action=principal-update&email=string&first-name=string&has-children=boolean&last-name=string&login=string&password=string&send-email=boolean&type=allowedValue&session=BreezeSessionCookieValue
     
-    # send-email: true
+    # send-email: false
     # has-children: 0
     # type: user
 
@@ -133,14 +124,7 @@ class AdobeConnectAPI
       "type" => "user")
 
     puts "ACS: user created"
-    puts res.body
-    data = XmlSimple.xml_in(res.body)
-    
-    if data.keys.include?('principal')
-      data["principal"].first["principal-id"]
-    else 
-      data
-    end
+    return res.body
   end
 
   def delete_user(principal_id)
@@ -155,7 +139,7 @@ class AdobeConnectAPI
   # create a new meeting in Adobe Connect
   # e.g. "https://collab-test.switch.ch/api/xml?action=sco-update&type=meeting&name=API-Test&folder-id=12578070&date-begin=2012-06-15T17:00&date-end=2012-06-15T23:00&url-path=apitest"
   def create_meeting(name, folder_id, url_path)
-    puts "ACS create meeting with name, folder_id and url_path: " + name + folder_id.to_s + url_path
+    puts "ACS create meeting with name '#{name}', folder_id '#{folder_id.to_s}' and url_path '#{url_path}'"
 
     res = query("sco-update", 
       "type" => "meeting", 
@@ -164,13 +148,15 @@ class AdobeConnectAPI
       "url-path" => url_path)
 
     puts "ACS: meeting created"
-    puts res.body
-    data = XmlSimple.xml_in(res.body)
-    if data.keys.include?('sco')
-      data["sco"].first['sco-id']
-    else
-      data
-    end
+    return res.body
+
+    # TODO KG: change invoking code
+    # data = XmlSimple.xml_in(res.body)
+    # if data.keys.include?('sco')
+    #   data["sco"].first['sco-id']
+    # else
+    #   data
+    # end
   end
 
   def delete_meeting(sco_id)
@@ -183,28 +169,18 @@ class AdobeConnectAPI
     return res.body
   end
 
-  # searches the user with the given email address and returns the principal id
+  # searches the user with the given email address
   # e.g. "https://collab-test.switch.ch/api/xml?action=principal-list&filter-email=rfurter@ethz.ch"
-  def get_principal_id(filter = nil, sort = nil)
-    puts "ACS: get_principal_id"
+  def get_principal(filter = nil, sort = nil)
+    puts "ACS: get_principal"
     res = query("principal-list", 
       "filter" => filter, 
       "sort" => sort)
 
-    puts res.body
-    data = XmlSimple.xml_in(res.body)
-    rows = []
-    if data["principal-list"]
-      data["principal-list"].each do |trans|
-        rows = trans["principal"]
-      end
-    end
-
-    # can only contain one result, since each email adress is used only once in AC
-    rows.first["principal-id"] unless rows.nil?
+    return res.body
   end
 
-  def get_my_meetings_folder_id(email)
+  def get_my_meetings_folder(email)
     # res = query("sco-shortcuts")
     # data = XmlSimple.xml_in(res.body)
     # if data["shortcuts"]
@@ -223,13 +199,8 @@ class AdobeConnectAPI
     filter = AdobeConnectApi::FilterDefinition.new
     filter["name"] == email
 
-    res = sco_contents(tree_id, filter)
-    if res.rows.empty?
-      return nil
-    else
-      # should not contain more than 1 result
-      return res.rows.first["sco-id"]
-    end
+    res = query("sco-contents", "sco-id" => tree_id, "filter" => filter)
+    return res.body
   end
 
   # e.g. "https://collab-test.switch.ch/api/xml?action=permissions-update&principal-id=12578066&acl-id=13112626&permission-id=host"
@@ -239,8 +210,7 @@ class AdobeConnectAPI
       "acl-id" => acl_id, 
       "permission-id" => permission_id)
     
-    data = XmlSimple.xml_in(res.body)
-    return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
+    return res.body
   end
 
   #action=group-membership-update&group-id=integer&principal-id=integer&is-member=boolean
@@ -318,31 +288,16 @@ class AdobeConnectAPI
 
   end
 
-  #returns SCO contents of sco-id
-  def sco_contents(sco_id, filter = nil, sort = nil)
-    res = query("sco-contents", "sco-id" => sco_id, "filter" => filter, "sort" => sort)
-    data = XmlSimple.xml_in(res.body)
-    scos = []
-#    puts YAML::dump(data)
-    if data["scos"]
-      data["scos"].each do |trans|
-#        puts YAML::dump(trans)
-#        puts "-------"
-        scos = trans["sco"]
-      end
-    end
-    return AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
-  end
-
   #returns SCO information of sco-id
   def sco_info(sco_id)
     res = query("sco-info", "sco-id" => sco_id)
-    data = XmlSimple.xml_in(res.body)
-    if data.keys.include?('sco') && data["sco"][0]
-      return data["sco"][0]
-    else
-      return data
-    end
+    return res.body
+    # data = XmlSimple.xml_in(res.body)
+    # if data.keys.include?('sco') && data["sco"][0]
+    #   return data["sco"][0]
+    # else
+    #   return data
+    # end
   end
 
   #returns permission information of an sco-id
@@ -417,24 +372,8 @@ class AdobeConnectAPI
     res = query("sco-search-by-field", 
       "query" => name, 
       "field" => "name")
-    data = XmlSimple.xml_in(res.body)
-    scos = []
-    if data["sco-search-by-field-info"]
-      results = data["sco-search-by-field-info"][0]
-      scos = results["sco"]
-    end
-    result = AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
 
-    if result.rows.empty?
-      nil
-    else
-      result.rows.each do |sco|
-        if sco["name"] == name
-          return sco["sco-id"]
-        end
-      end
-    end
-    return nil
+    return res.body
   end
 
   def update_meeting(sco_id, description, language)
