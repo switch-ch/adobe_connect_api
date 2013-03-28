@@ -30,7 +30,11 @@ require 'adobe_connect_api/xml_parser'
 # All the actions are defined in the Adobe Connect Pro API documentation
 # some of the actions are accepting filter- and/or sorting-definitions.
 
-# module AdobeConnectApi
+# NOTE KG: refactored so that all methods return the body of the query result, e.g.
+# "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<results><status code=\"ok\"/><sco account-id=\"7\" disabled=\"\" display-seq=\"0\" folder-id=\"14152063\" 
+# icon=\"meeting\" lang=\"en\" max-retries=\"\" sco-id=\"14153596\" source-sco-id=\"\" type=\"meeting\" version=\"0\"><date-created>2013-03-27T17:55:36.403+01:00</date-created><
+# date-modified>2013-03-27T17:55:36.403+01:00</date-modified><name>Testmeeting from RSpec</name><url-path>/rspec_testmeeting/</url-path></sco></results>"
+
 class AdobeConnectAPI
   include XMLParser
 
@@ -67,7 +71,7 @@ class AdobeConnectAPI
 
     if (login != nil && password == nil)
       # user given --> use generic user password
-      # TODO KG: generate password
+      # TODO: generate password (see https://forge.switch.ch/redmine/issues/2355)
       password = pointconfig["generic_user_password"]
     elsif (login == nil) && (password == nil)
        login = pointconfig["username"]
@@ -103,12 +107,6 @@ class AdobeConnectAPI
 
   # creates a new user in Adobe Connect
   def create_user(email = nil, login = nil, password = nil, first_name = nil, last_name = nil)
-    # ?action=principal-update&email=string&first-name=string&has-children=boolean&last-name=string&login=string&password=string&send-email=boolean&type=allowedValue&session=BreezeSessionCookieValue
-    
-    # send-email: false
-    # has-children: 0
-    # type: user
-
     if password == nil
       password = pointconfig["generic_user_password"]
     end
@@ -149,14 +147,6 @@ class AdobeConnectAPI
 
     puts "ACS: meeting created"
     return res.body
-
-    # TODO KG: change invoking code
-    # data = XmlSimple.xml_in(res.body)
-    # if data.keys.include?('sco')
-    #   data["sco"].first['sco-id']
-    # else
-    #   data
-    # end
   end
 
   def delete_meeting(sco_id)
@@ -181,19 +171,10 @@ class AdobeConnectAPI
   end
 
   def get_my_meetings_folder(email)
-    # res = query("sco-shortcuts")
-    # data = XmlSimple.xml_in(res.body)
-    # if data["shortcuts"]
-    #   data["shortcuts"].each do |trans|
-    #     if trans["sco"]["type"] == "user-meetings"
-    #       tree_id = trans["sco"]["sco-id"]
-    #       break
-    #   end
-    # end
-
     # NOTE: this id does not change unless we set up AC new
     # tree_id = 14
     # since we migrated to the new hardware, the tree_id changed
+    # i.e. sco-id of the user content folder, see: https://collab-test.switch.ch/api/xml?action=sco-shortcuts
     tree_id = 11
 
     filter = AdobeConnectApi::FilterDefinition.new
@@ -212,6 +193,43 @@ class AdobeConnectAPI
     
     return res.body
   end
+
+  #returns SCO information of sco-id
+  def sco_info(sco_id)
+    res = query("sco-info", "sco-id" => sco_id)
+    return res.body
+  end
+
+  # sco-search-by-field&query=TB_ac_test&field=name
+  def search_meeting(name)
+    filter = AdobeConnectApi::FilterDefinition.new
+    filter["type"] == "meeting"
+    res = query("sco-search-by-field", 
+      "query" => name, 
+      "field" => "name", 
+      "filter" => filter)
+    # data = XmlSimple.xml_in(res.body)
+    # scos = []
+    # if data["sco-search-by-field-info"]
+    #   results = data["sco-search-by-field-info"][0]
+    #   scos = results["sco"]
+    # end
+    return res.body
+  end
+
+  # TODO KG: test
+  def update_meeting(sco_id, description, language)
+    "action = sco-update&sco-id=&description=&lang="
+    res = query("sco-update", 
+      "sco-id" => sco_id, 
+      "description" => description,
+      "lang" => language)
+
+    return res.body
+  end
+
+
+  # TODO KG: test statistic functions
 
   #action=group-membership-update&group-id=integer&principal-id=integer&is-member=boolean
   def group_membership_update(group_id, principal_id, is_member)
@@ -288,21 +306,12 @@ class AdobeConnectAPI
 
   end
 
-  #returns SCO information of sco-id
-  def sco_info(sco_id)
-    res = query("sco-info", "sco-id" => sco_id)
-    return res.body
-    # data = XmlSimple.xml_in(res.body)
-    # if data.keys.include?('sco') && data["sco"][0]
-    #   return data["sco"][0]
-    # else
-    #   return data
-    # end
-  end
-
+  # TODO KG: refactor (return res.body) and test
   #returns permission information of an sco-id
   def permissions_info(sco_id, filter = nil)
     res = query("permissions-info", "acl-id" => sco_id, "filter" => filter)
+
+    return res.body
     data = XmlSimple.xml_in(res.body)
     if data['permissions'][0]
       return data['permissions'][0]
@@ -353,38 +362,6 @@ class AdobeConnectAPI
     return AdobeConnectAPI::Result.new(data["status"][0]["code"], rows)
   end
 
-  # sco-search-by-field&query=TB_ac_test&field=name
-  def search_meeting(name)
-    res = query("sco-search-by-field", 
-      "query" => name, 
-      "field" => "name")
-    data = XmlSimple.xml_in(res.body)
-    scos = []
-    if data["sco-search-by-field-info"]
-      results = data["sco-search-by-field-info"][0]
-      scos = results["sco"]
-    end
-    return AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
-  end
-
-  # sco-search-by-field&query=TB_ac_test&field=name and additionally check that the name is exactly the same (what is not done in Adobe Connect)
-  def search_unique_name(name)
-    res = query("sco-search-by-field", 
-      "query" => name, 
-      "field" => "name")
-
-    return res.body
-  end
-
-  def update_meeting(sco_id, description, language)
-    "action = sco-update&sco-id=&description=&lang="
-    res = query("sco-update", 
-      "sco-id" => sco_id, 
-      "description" => description,
-      "lang" => language)
-    data = XmlSimple.xml_in(res.body)
-    return AdobeConnectAPI::Result.new(data["status"][0]["code"], nil)
-  end
 
   #sends a query to the server and returns the http response. Parameters,
   #filter- and sort-definitions can be added. The filter as "filter" => ... and

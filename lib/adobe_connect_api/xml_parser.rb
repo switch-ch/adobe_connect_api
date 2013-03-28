@@ -1,19 +1,27 @@
+# Copyright (c) 2010 - 2013 SWITCH - Serving Swiss Universities
+# Author: Katja Gräfenhain <katja.graefenhain@switch.ch>
+
 # This class is a simple utility to parse the result from querying the 
 # adobe connect api. All methods accept a String containing XML, that is
 # returned from the AdobeConnectAPI methods.
+# For queries and returned results see the API documentation: 
+# http://help.adobe.com/en_US/connect/8.0/webservices/connect_8_webservices.pdf
 module XMLParser
 
+  # used for all actions, e.g. 'login' and 'logout'
   def get_status_code(xml)
     data = XmlSimple.xml_in(xml)
     data['status'].first['code']
   end
 
-  def get_subcode_invalid(xml)
+  # used if the returned status contains an invalid value
+  def get_invalid_subcode(xml)
     data = XmlSimple.xml_in(xml)
     data['status'].first['invalid'].first['subcode']
   end
 
-  # use only if the xml can contain only one result, e.g. after querying a principal by email
+  # supported actions: 'principal-update' or 'principal-list'
+  # NOTE: does not handle more than one result, so use only for 'principal-list' that returns a unique result e.g. when querying users by e-mail
   def get_principal_id(xml)
     data = XmlSimple.xml_in(xml)
     if data.keys.include?('principal-list')
@@ -26,12 +34,10 @@ module XMLParser
     return nil
   end
 
-  # TODO KG: decide how to handle results with multiple answer possibilities
+  # supported actions: 'sco-update', 'sco-info'
   def get_sco_id(xml)
     data = XmlSimple.xml_in(xml)
-    if data['sco-search-by-field-info']
-      return data['sco-search-by-field-info'].first['sco'].first['sco-id'] unless data['sco-search-by-field-info'].first.empty?
-    elsif data['sco']
+    if data['sco']
       return data['sco'].first['sco-id']
     else
       raise "XMLParser does not support result of this format. No sco information found."
@@ -39,9 +45,26 @@ module XMLParser
     return nil
   end
 
+  # supported action: 'sco-search-by-field'
+  # gets the first result that name EXACTLY matches the given name
+  def get_sco_id_for_unique_name(xml, name)
+    data = XmlSimple.xml_in(xml)
+    if data['sco-search-by-field-info'] && !data['sco-search-by-field-info'].first.empty?
+      data['sco-search-by-field-info'].first['sco'].each do |sco|
+        if sco['name'].first == name
+          return sco['sco-id']
+        else 
+          raise "No correct match for name #{name} found"
+        end
+      end
+    end
+    return nil
+  end
+
+  # supported actions: 'sco-contents' but only with filter-name and the user's e-mail-address (does not consider multiple sco results)
+  # e.g. action=sco-contents&sco-id=11&filter-name=interact-support%40switch.ch
   def get_folder_id(xml)
     data = XmlSimple.xml_in(xml)
-    puts data.inspect
 
     if data['scos']
       return data['scos'].first['sco'].first['sco-id'] unless data['scos'].first.empty?
@@ -49,24 +72,6 @@ module XMLParser
       raise "XMLParser does not support result of this format. No sco information found."
     end
     return nil
-
-#     scos = []
-# #    puts YAML::dump(data)
-#     if data["scos"]
-#       data["scos"].each do |trans|
-# #        puts YAML::dump(trans)
-# #        puts "-------"
-#         scos = trans["sco"]
-#       end
-#     end
-#     return AdobeConnectAPI::Result.new(data["status"][0]["code"], scos)
-
-#     if res.rows.empty?
-#       return nil
-#     else
-#       # should not contain more than 1 result
-#       return res.rows.first["sco-id"]
-#     end
   end
   
 end

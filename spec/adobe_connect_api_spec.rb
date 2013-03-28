@@ -1,3 +1,6 @@
+# Copyright (c) 2010 - 2013 SWITCH - Serving Swiss Universities
+# Author: Katja Gräfenhain <katja.graefenhain@switch.ch>
+
 require 'spec_helper'
 #include '../lib/adobe_connect_api/xml_parser'
 
@@ -60,8 +63,8 @@ describe AdobeConnectAPI do
       @acs.login(login, password)
 
       # delete the meeting if it already exists
-      res = @acs.search_unique_name(MEETING_NAME)
-      sco_id = @acs.get_sco_id(res)
+      res = @acs.search_meeting(MEETING_NAME)
+      sco_id = @acs.get_sco_id_for_unique_name(res, MEETING_NAME)
       @acs.delete_meeting(sco_id) unless sco_id.nil?
     end
 
@@ -128,8 +131,8 @@ describe AdobeConnectAPI do
       @folder_id = @acs.get_folder_id(@acs.get_my_meetings_folder(@interactconfig['test_user']))
 
       # check if meeting already exists
-      res = @acs.search_unique_name(MEETING_NAME)
-      @sco_id = @acs.get_sco_id(res)
+      res = @acs.search_meeting(MEETING_NAME)
+      @sco_id = @acs.get_sco_id_for_unique_name(res, MEETING_NAME)
 
       if @sco_id.nil?
         # create meeting
@@ -144,7 +147,7 @@ describe AdobeConnectAPI do
       status = @acs.get_status_code(res)
       status.should include(STATUS_INVALID)
 
-      subcode = @acs.get_subcode_invalid(res)
+      subcode = @acs.get_invalid_subcode(res)
       subcode.should include(CODE_DUPLICATE)
     end
 
@@ -154,8 +157,8 @@ describe AdobeConnectAPI do
       @acs.get_status_code(res).should include(STATUS_OK)
 
       # try to find meeting again
-      res = @acs.search_unique_name(MEETING_NAME)
-      sco_id = @acs.get_sco_id(res)
+      res = @acs.search_meeting(MEETING_NAME)
+      sco_id = @acs.get_sco_id_for_unique_name(res, MEETING_NAME)
       sco_id.should be_nil
     end
 
