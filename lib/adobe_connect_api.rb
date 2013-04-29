@@ -50,17 +50,11 @@ class AdobeConnectAPI
     @sessionid
   end
 
-  # def pointconfig=(pointconfig)
-  #   if pointconfig == nil
-  #     pointconfig = YAML::load_file("#{root_directory}/config/config.breeze.yml")[environment]
-  #   end
-  #   @pointconfig = pointconfig
-  # end
-
   #The URL is the base URL of the Connect-Server, without the trailing slash
   def initialize (url = nil, environment, root_directory)
+    @pointconfig = YAML::load_file("#{root_directory}/config/config.breeze.yml")[environment]
     if (url == nil)
-      @url = pointconfig["url"]
+      @url = @pointconfig["url"]
     else
       @url = url
     end
@@ -72,10 +66,10 @@ class AdobeConnectAPI
     if (login != nil && password == nil)
       # user given --> use generic user password
       # TODO: generate password (see https://forge.switch.ch/redmine/issues/2355)
-      password = pointconfig["generic_user_password"]
+      password = @pointconfig["generic_user_password"]
     elsif (login == nil) && (password == nil)
-       login = pointconfig["username"]
-       password = pointconfig["password"]
+       login = @pointconfig["username"]
+       password = @pointconfig["password"]
     end
 
     res = query("login",
@@ -108,7 +102,7 @@ class AdobeConnectAPI
   # creates a new user in Adobe Connect
   def create_user(email = nil, login = nil, password = nil, first_name = nil, last_name = nil)
     if password == nil
-      password = pointconfig["generic_user_password"]
+      password = @pointconfig["generic_user_password"]
     end
 
     res = query("principal-update", 
@@ -237,6 +231,8 @@ class AdobeConnectAPI
       "group-id" => group_id, 
       "principal-id" => principal_id, 
       "is-member" => is_member)
+
+    return res.body
   end
 
   # e.g. acl-field-update&acl-id=13117741&field-id=meeting-passcode&value=12345
