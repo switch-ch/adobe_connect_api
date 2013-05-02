@@ -21,7 +21,7 @@ CODE_DUPLICATE = 'duplicate'
 describe AdobeConnectAPI do
 
   before(:each) do
-    @interactconfig = YAML::load_file("./config/config.breeze.yml")[ENV["RAILS_ENV"]]
+    @interactconfig = YAML::load_file('./config/config.breeze.yml')[ENV["RAILS_ENV"]]
     url = @interactconfig['url']
 
     # open AdobeConnectAPI (use URL from config file)

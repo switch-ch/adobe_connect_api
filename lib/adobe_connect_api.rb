@@ -50,9 +50,21 @@ class AdobeConnectAPI
     @sessionid
   end
 
+  def pointconfig=(pointconfig)
+    if pointconfig == nil
+      pointconfig = YAML::load_file("#{root_directory}/config/config.breeze.yml")[environment]
+    else
+      @pointconfig = pointconfig
+    end
+  end
+
   #The URL is the base URL of the Connect-Server, without the trailing slash
   def initialize (url = nil, environment, root_directory)
-    @pointconfig = YAML::load_file("#{root_directory}/config/config.breeze.yml")[environment]
+    begin
+      @pointconfig = YAML::load_file("#{root_directory}/config/config.breeze.yml")[environment]
+    rescue
+       # should not occur except when running tests
+    end
     if (url == nil)
       @url = @pointconfig["url"]
     else
