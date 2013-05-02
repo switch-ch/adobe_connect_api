@@ -223,6 +223,17 @@ class AdobeConnectAPI
     return res.body
   end
 
+  #action=group-membership-update&group-id=integer&principal-id=integer&is-member=boolean
+  def group_membership_update(group_id, principal_id, is_member)
+    res = query("group-membership-update", 
+      "group-id" => group_id, 
+      "principal-id" => principal_id, 
+      "is-member" => is_member)
+
+    return res.body
+  end
+
+
   # TODO KG: test
   def update_meeting(sco_id, description, language)
     "action = sco-update&sco-id=&description=&lang="
@@ -236,17 +247,6 @@ class AdobeConnectAPI
 
 
   # TODO KG: test statistic functions
-
-  #action=group-membership-update&group-id=integer&principal-id=integer&is-member=boolean
-  def group_membership_update(group_id, principal_id, is_member)
-    res = query("group-membership-update", 
-      "group-id" => group_id, 
-      "principal-id" => principal_id, 
-      "is-member" => is_member)
-
-    return res.body
-  end
-
   # e.g. acl-field-update&acl-id=13117741&field-id=meeting-passcode&value=12345
   def set_passcode(acl_id, passcode)
     res = query("acl-field-update", 

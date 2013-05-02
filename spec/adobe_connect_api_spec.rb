@@ -11,6 +11,8 @@ E_MAIL = 'testuser@switch.ch'
 FIRST_NAME = 'Test'
 LAST_NAME = 'User'
 
+E_MAIL_2 = 'testuser2@switch.ch'
+
 # API return values
 STATUS_OK = 'ok'
 NO_DATA = 'no-data'
@@ -99,12 +101,18 @@ describe AdobeConnectAPI do
       password = @interactconfig['password']
       @acs.login(login, password)
 
-      # delete the user if it already exists
+      # delete the users if they already exist
       filter = AdobeConnectApi::FilterDefinition.new
       filter["email"] == E_MAIL
       principal = @acs.get_principal(filter)
       sco_id = @acs.get_principal_id(principal)
       @acs.delete_user(sco_id) unless sco_id.nil?
+
+      filter2 = AdobeConnectApi::FilterDefinition.new
+      filter2["email"] == E_MAIL_2
+      principal2 = @acs.get_principal(filter2)
+      sco_id2 = @acs.get_principal_id(principal2)
+      @acs.delete_user(sco_id2) unless sco_id2.nil?
     end
 
     it 'should be able to create a user' do
@@ -117,6 +125,23 @@ describe AdobeConnectAPI do
       # should return the sco-id of the new user
       @acs.get_principal_id(res).to_i.should_not be 0
     end
+
+    it 'should be able to update the group membership' do
+      # get id of the authors group
+      filter_authors = AdobeConnectApi::FilterDefinition.new
+      filter_authors["type"] == "authors"
+      res = @acs.get_principal(filter_authors)
+      authors_group_id = @acs.get_principal_id(res)
+      authors_group_id.to_i.should_not be 0
+
+      # create user
+      password = @interactconfig['generic_user_password']
+      res = @acs.create_user(E_MAIL_2, E_MAIL_2, password, FIRST_NAME, LAST_NAME)
+      sco_id = @acs.get_principal_id(res)
+
+      @acs.group_membership_update(authors_group_id, sco_id, true).should include(STATUS_OK)
+    end
+
   end
 
 
