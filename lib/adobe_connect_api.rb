@@ -178,10 +178,7 @@ class AdobeConnectAPI
 
   def get_my_meetings_folder(email)
     # NOTE: this id does not change unless we set up AC new
-    # tree_id = 14
-    # since we migrated to the new hardware, the tree_id changed
-    # i.e. sco-id of the user content folder, see: https://collab-test.switch.ch/api/xml?action=sco-shortcuts
-    tree_id = 11
+    tree_id = 14
 
     filter = AdobeConnectApi::FilterDefinition.new
     filter["name"] == email
@@ -236,7 +233,7 @@ class AdobeConnectAPI
 
   # TODO KG: test
   def update_meeting(sco_id, description, language)
-    "action = sco-update&sco-id=&description=&lang="
+    # "action = sco-update&sco-id=&description=&lang="
     res = query("sco-update", 
       "sco-id" => sco_id, 
       "description" => description,
@@ -244,7 +241,6 @@ class AdobeConnectAPI
 
     return res.body
   end
-
 
   # TODO KG: test statistic functions
   # e.g. acl-field-update&acl-id=13117741&field-id=meeting-passcode&value=12345
