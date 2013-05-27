@@ -230,8 +230,6 @@ class AdobeConnectAPI
     return res.body
   end
 
-
-  # TODO KG: test
   def update_meeting(sco_id, description, language)
     # "action = sco-update&sco-id=&description=&lang="
     res = query("sco-update", 
@@ -242,7 +240,11 @@ class AdobeConnectAPI
     return res.body
   end
 
-  # TODO KG: test statistic functions
+
+
+
+  ### STATISTIC FUNCTIONS (NOTE: NOT YET TESTED) ###
+
   # e.g. acl-field-update&acl-id=13117741&field-id=meeting-passcode&value=12345
   def set_passcode(acl_id, passcode)
     res = query("acl-field-update", 

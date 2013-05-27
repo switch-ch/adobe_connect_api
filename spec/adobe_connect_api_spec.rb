@@ -72,6 +72,7 @@ describe AdobeConnectAPI do
 
     it 'should return the id of my-meetings folder' do
       folder = @acs.get_my_meetings_folder(@interactconfig['test_user'])
+      puts folder
       @acs.get_folder_id(folder).to_i.should_not be 0
     end
 
@@ -199,6 +200,11 @@ describe AdobeConnectAPI do
     it 'should return the sco-info' do 
       res = @acs.sco_info(@sco_id)
       @acs.get_sco_id(res).should eq @sco_id
+    end
+
+    it 'should update the meeting attributes' do
+      res = @acs.update_meeting(@sco_id, 'description', 'en')
+      @acs.get_status_code(res).should match STATUS_OK
     end
 
   end

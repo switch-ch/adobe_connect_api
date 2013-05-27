@@ -4,7 +4,6 @@
 # filter["sco-id"].greater_than 25
 # filter["date-created"] <= Time.now
 
-# TODO KG: rename to AdobeConnectAPI since the class is also named API
 class AdobeConnectApi::FilterDefinition
   attr_accessor :rows
   attr_accessor :start
