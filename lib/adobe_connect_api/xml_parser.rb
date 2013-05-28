@@ -78,10 +78,7 @@ module XMLParser
     data = XmlSimple.xml_in(xml)
 
     if data['description']
-      puts data.inspect
-      puts data.class
-      puts data['description'].inspect
-      return data['description'].first
+      return data['sco'].first['description']
     else
       raise "No description information found."
     end
@@ -92,7 +89,7 @@ module XMLParser
     data = XmlSimple.xml_in(xml)
 
     if data['lang']
-      return data['lang'].first
+      data['sco'].first['lang']
     else
       raise "No language information found."
     end
