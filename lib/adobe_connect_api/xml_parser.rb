@@ -73,5 +73,27 @@ module XMLParser
     end
     return nil
   end
+
+  def get_description(xml)
+    data = XmlSimple.xml_in(xml)
+
+    if data['description']
+      return data['description'].first
+    else
+      raise "No description information found."
+    end
+    return nil
+  end
+
+  def get_language(xml)
+    data = XmlSimple.xml_in(xml)
+
+    if data['lang']
+      return data['lang'].first
+    else
+      raise "No language information found."
+    end
+    return nil
+  end
   
 end
