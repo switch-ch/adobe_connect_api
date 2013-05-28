@@ -78,6 +78,9 @@ module XMLParser
     data = XmlSimple.xml_in(xml)
 
     if data['description']
+      puts data.inspect
+      puts data.class
+      puts data['description'].inspect
       return data['description'].first
     else
       raise "No description information found."
