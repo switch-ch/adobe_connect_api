@@ -77,7 +77,7 @@ module XMLParser
   def get_description(xml)
     data = XmlSimple.xml_in(xml)
 
-    if data['description']
+    if data['sco'].first['description']
       return data['sco'].first['description']
     else
       raise "No description information found."
@@ -88,7 +88,7 @@ module XMLParser
   def get_language(xml)
     data = XmlSimple.xml_in(xml)
 
-    if data['lang']
+    if data['sco'].first['lang']
       data['sco'].first['lang']
     else
       raise "No language information found."
